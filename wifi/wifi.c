@@ -107,6 +107,8 @@ struct genl_family *nl80211;
 
 #ifdef MTK_MT6589
 #define HALD_SUPPORT
+int wifi_set_power(int enable);
+int wifi_set_p2p_mode(int enable, int mode);
 #endif
 
 #ifndef WIFI_DRIVER_MODULE_ARG
@@ -1389,10 +1391,11 @@ int halDoCommand(const char *cmd)
     ALOGD("Hal cmd: \"%s\"", final_cmd);
 
     if (write(sock, final_cmd, strlen(final_cmd) + 1) < 0) {
+        int err = errno;
+        ALOGE("Hal cmd error: \"%s\" (%s)", final_cmd, strerror(err));
         free(final_cmd);
-	close(sock);
-        ALOGE("Hal cmd error: \"%s\"", final_cmd);
-        return errno;
+        close(sock);
+        return err;
     }
     free(final_cmd);
     return halDoMonitor(sock);
